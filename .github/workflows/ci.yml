@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar dbt
+      - name: Instalar dbt-postgres
         run: pip install dbt-postgres
 
-      - name: profiles.yml (dummy)
+      - name: profiles.yml (CI)
         run: |
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml << 'EOF'
@@ -41,7 +41,7 @@ jobs:
                 threads: 4
           EOF
 
-      - name: dbt deps
+      - name: dbt deps (compile)
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt deps --profiles-dir ~/.dbt
 
@@ -79,10 +79,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar dbt
+      - name: Instalar dbt-postgres
         run: pip install dbt-postgres
 
-      - name: profiles.yml (CI correto)
+      - name: profiles.yml (CI)
         run: |
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml << 'EOF'
@@ -91,7 +91,7 @@ jobs:
             outputs:
               dev:
                 type: postgres
-                host: localhost   # 🔥 CORREÇÃO PRINCIPAL
+                host: localhost
                 port: 5432
                 user: postgres
                 password: postgres
@@ -99,6 +99,10 @@ jobs:
                 schema: public
                 threads: 4
           EOF
+
+      - name: dbt deps
+        working-directory: 2_data_warehouse/dw_bootcamp
+        run: dbt deps --profiles-dir ~/.dbt
 
       - name: dbt debug
         working-directory: 2_data_warehouse/dw_bootcamp
