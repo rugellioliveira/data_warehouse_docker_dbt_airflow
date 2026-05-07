@@ -31,7 +31,6 @@ jobs:
         run: pip install dbt-postgres
 
       - name: Criar profiles.yml para validação
-        working-directory: 2_data_warehouse/dw_bootcamp
         run: |
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml << 'EOF'
@@ -51,11 +50,11 @@ jobs:
 
       - name: Instalar pacotes dbt (dbt deps)
         working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt deps
+        run: dbt deps --profiles-dir ~/.dbt
 
       - name: Validar sintaxe dos modelos dbt (dbt parse)
-        working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt parse
+        working-directory: 2_data_warehouse/dw_bootbootcamp
+        run: dbt parse --profiles-dir ~/.dbt
 
   dbt-build:
     name: Executar pipeline completo (seed + run + test)
@@ -116,19 +115,19 @@ jobs:
 
       - name: Testar conexão com o banco (dbt debug)
         working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt debug
+        run: dbt debug --profiles-dir ~/.dbt
 
       - name: Carregar dados brutos (dbt seed)
         working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt seed
+        run: dbt seed --profiles-dir ~/.dbt
 
       - name: Executar models e testes (dbt build)
         working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt build --exclude-resource-type seed
+        run: dbt build --exclude-resource-type seed --profiles-dir ~/.dbt
 
       - name: Gerar documentação dbt
         working-directory: 2_data_warehouse/dw_bootcamp
-        run: dbt docs generate
+        run: dbt docs generate --profiles-dir ~/.dbt
 
       - name: Publicar artefatos de documentação
         uses: actions/upload-artifact@v4
