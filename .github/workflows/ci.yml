@@ -12,17 +12,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Faz checkout do código do repositório
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Configura ambiente Python 3.11
       - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Instala adaptador dbt para PostgreSQL
       - name: Instalar dbt-postgres
         run: pip install dbt-postgres
 
+      # Cria arquivo profiles.yml temporário para execução no CI
       - name: profiles.yml (CI)
         run: |
           mkdir -p ~/.dbt
@@ -41,10 +45,12 @@ jobs:
                 threads: 4
           EOF
 
+      # Instala dependências declaradas no packages.yml
       - name: dbt deps (compile)
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt deps --profiles-dir ~/.dbt
 
+      # Faz parsing dos modelos para validar sintaxe e estrutura
       - name: dbt parse
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt parse --profiles-dir ~/.dbt
@@ -56,6 +62,7 @@ jobs:
     needs: dbt-compile
 
     services:
+      # Serviço PostgreSQL utilizado durante os testes do pipeline
       postgres:
         image: postgres:17
         env:
@@ -71,17 +78,21 @@ jobs:
           --health-retries 10
 
     steps:
+      # Faz checkout do código do repositório
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Configura ambiente Python 3.11
       - name: Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Instala adaptador dbt para PostgreSQL
       - name: Instalar dbt-postgres
         run: pip install dbt-postgres
 
+      # Cria arquivo profiles.yml apontando para PostgreSQL do CI
       - name: profiles.yml (CI)
         run: |
           mkdir -p ~/.dbt
@@ -100,26 +111,32 @@ jobs:
                 threads: 4
           EOF
 
+      # Instala dependências do projeto dbt
       - name: dbt deps
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt deps --profiles-dir ~/.dbt
 
+      # Valida conexão entre dbt e PostgreSQL
       - name: dbt debug
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt debug --profiles-dir ~/.dbt
 
+      # Carrega arquivos CSV definidos em seeds/
       - name: dbt seed
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt seed --profiles-dir ~/.dbt
 
+      # Executa modelos e testes do projeto
       - name: dbt build
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt build --exclude-resource-type seed --profiles-dir ~/.dbt
 
+      # Gera documentação estática do dbt
       - name: dbt docs generate
         working-directory: 2_data_warehouse/dw_bootcamp
         run: dbt docs generate --profiles-dir ~/.dbt
 
+      # Publica artefatos gerados da documentação
       - name: Upload docs
         uses: actions/upload-artifact@v4
         with:
